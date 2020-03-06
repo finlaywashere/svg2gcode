@@ -97,6 +97,8 @@ public class Main {
 					y = (int) (y * yScale);
 					width = (int) (width * xScale);
 					height = (int) (height * yScale);
+					if(rx != 0)
+						rx = (int) ((int) rx * xScale);
 
 					int adjustedWidth = width - rx;
 					int adjustedHeight = height - rx;
@@ -133,7 +135,50 @@ public class Main {
 					}
 
 				} else if (name.equals("circle")) {
-
+					int r = Integer.MIN_VALUE;
+					int cx = Integer.MIN_VALUE;
+					int cy = Integer.MIN_VALUE;
+					for (int i1 = 0; i1 < map.getLength(); i1++) {
+						Node n1 = map.item(i1);
+						switch (n1.getNodeName()) {
+						case "cx":
+							cx = Integer.valueOf(n1.getNodeValue());
+							break;
+						case "cy":
+							cy = Integer.valueOf(n1.getNodeValue());
+							break;
+						case "r":
+							r = Integer.valueOf(n1.getNodeValue());
+							break;
+						}
+					}
+					cx = (int) (cx * xScale);
+					cy = (int) (cy * yScale);
+					r = (int) (r * yScale);
+					if(cx == Integer.MIN_VALUE || cy == Integer.MIN_VALUE || r == Integer.MIN_VALUE) {
+						System.err.println("Error in SVG file!");
+						System.exit(1);
+					}
+					gcode.add("G00 X"+(cx-r)+"Y"+cy);
+					gcode.add("G02 X"+(cx+r)+" R"+r);
+					gcode.add("G02 X"+(cx-r)+" R"+r);
+					
+					boolean atLeft = true;
+					for(double y1 = cy - r; y1 < cy +r; y1++) {
+						if(y1 < cy) {
+							double width = Math.sqrt(Math.pow(r, 2) - Math.pow((y1-cy), 2));
+							gcode.add("G00 X"+(!atLeft ? cx+width : cx-width)+"Y"+y1);
+							gcode.add("G01 X"+(!atLeft ? (cx-width) : (cx+width)));
+						}else if(y1 > cy) {
+							double width = Math.sqrt(Math.pow(r, 2) - Math.pow((y1-cy), 2));
+							gcode.add("G00 X"+(!atLeft ? cx+width : cx-width)+"Y"+y1);
+							gcode.add("G01 X"+(!atLeft ? (cx-width) : (cx+width)));
+						}else {
+							gcode.add("G00 X"+(!atLeft ? cx+r : cx-r)+"Y"+y1);
+							gcode.add("G01 X"+(!atLeft ? (cx-r) : (cx+r)));
+						}
+						atLeft = !atLeft;
+					}
 				}
 			}
 		}
