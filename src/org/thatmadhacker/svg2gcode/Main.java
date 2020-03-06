@@ -47,7 +47,7 @@ public class Main {
 		gcode.add("M82");
 		gcode.add("M107");
 		gcode.add("G28 X0Y0");
-		gcode.add("G28 Z" + sHeight);
+		gcode.add("G00 Z" + sHeight);
 
 		int svgWidth = Integer.valueOf(document.getDocumentElement().getAttribute("width"));
 		int svgHeight = Integer.valueOf(document.getDocumentElement().getAttribute("height"));
